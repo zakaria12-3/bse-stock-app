@@ -12,6 +12,15 @@ rm -f public/hot
 php artisan storage:link || true
 php artisan optimize:clear
 php artisan migrate --force
+
+if [ -n "${ADMIN_PASSWORD:-}" ]; then
+    php artisan bse:create-admin \
+        --name="${ADMIN_NAME:-BSE Admin}" \
+        --username="${ADMIN_USERNAME:-admin}" \
+        --email="${ADMIN_EMAIL:-admin@admin.com}" \
+        --password="${ADMIN_PASSWORD}"
+fi
+
 php artisan config:cache
 php artisan view:cache
 

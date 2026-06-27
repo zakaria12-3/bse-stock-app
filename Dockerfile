@@ -46,6 +46,7 @@ COPY resources ./resources
 COPY public ./public
 COPY vite.config.js tailwind.config.js postcss.config.js ./
 RUN npm run build
+RUN test -f public/build/manifest.json
 
 FROM php:8.3-apache-bookworm
 
@@ -79,6 +80,7 @@ COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/start.sh /usr/local/bin/render-start
 
 RUN chmod +x /usr/local/bin/render-start \
+    && rm -f public/hot \
     && mkdir -p storage/app/public storage/app/livewire-tmp storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 

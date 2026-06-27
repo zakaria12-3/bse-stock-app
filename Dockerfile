@@ -7,8 +7,32 @@ COPY public ./public
 COPY vite.config.js tailwind.config.js postcss.config.js ./
 RUN npm run build
 
-FROM composer:2 AS vendor
+FROM php:8.3-cli-bookworm AS vendor
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        libicu-dev \
+        libonig-dev \
+        libpng-dev \
+        libpq-dev \
+        libzip-dev \
+        unzip \
+    && docker-php-ext-install \
+        bcmath \
+        exif \
+        gd \
+        intl \
+        mbstring \
+        pcntl \
+        pdo_mysql \
+        pdo_pgsql \
+        zip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 COPY composer.json composer.lock ./
 COPY app ./app
 COPY bootstrap ./bootstrap

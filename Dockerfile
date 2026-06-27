@@ -1,12 +1,3 @@
-FROM node:22-bookworm AS assets
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY resources ./resources
-COPY public ./public
-COPY vite.config.js tailwind.config.js postcss.config.js ./
-RUN npm run build
-
 FROM php:8.3-cli-bookworm AS vendor
 WORKDIR /app
 
@@ -45,6 +36,16 @@ COPY routes ./routes
 COPY artisan ./
 RUN mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+FROM node:22-bookworm AS assets
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY --from=vendor /app/vendor ./vendor
+COPY resources ./resources
+COPY public ./public
+COPY vite.config.js tailwind.config.js postcss.config.js ./
+RUN npm run build
 
 FROM php:8.3-apache-bookworm
 

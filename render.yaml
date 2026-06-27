@@ -1,0 +1,68 @@
+services:
+  - type: web
+    name: bse-stock-test
+    env: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /login
+    envVars:
+      - key: APP_NAME
+        value: BSE Stock
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://bse-stock-test.onrender.com
+      - key: APP_LOCALE
+        value: fr
+      - key: APP_FALLBACK_LOCALE
+        value: fr
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: bse-stock-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: bse-stock-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: bse-stock-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: bse-stock-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: bse-stock-db
+          property: password
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: DEBUGBAR_ENABLED
+        value: false
+      - key: MAIL_MAILER
+        value: log
+      - key: VITE_APP_NAME
+        value: BSE Stock
+
+databases:
+  - name: bse-stock-db
+    plan: free
+    databaseName: bse_stock
+    user: bse_stock_user

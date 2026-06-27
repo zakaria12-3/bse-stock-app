@@ -1,0 +1,14 @@
+TEST CREDETIANLS: {
+    	
+
+	admin:{ username:"admin1",
+		password:"bse12345"}
+	user:{ username:"adem1",
+		password:"bse123456"}
+
+
+
+
+
+
+}

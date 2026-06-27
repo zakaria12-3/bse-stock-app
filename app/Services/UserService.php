@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\User;
+use App\DTOs\UserData;
+use App\Models\Purchase;
+use App\Models\FinanceTransaction;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
+
+class UserService
+{
+    public function createUser(UserData $data): User
+    {
+        return DB::transaction(function () use ($data) {
+            $user = User::create([
+                'name' => $data->name,
+                'username' => $data->username,
+                'email' => $data->email,
+                'role' => $data->role,
+                'password' => Hash::make($data->password),
+            ]);
+
+            Cache::forget('users_list_all');
+
+            return $user;
+        });
+    }
+
+    public function updateUser(User $user, UserData $data): User
+    {
+        return DB::transaction(function () use ($user, $data) {
+            $updateData = [
+                'name' => $data->name,
+                'username' => $data->username,
+                'email' => $data->email,
+                'role' => $data->role,
+            ];
+
+            if ($data->password) {
+                $updateData['password'] = Hash::make($data->password);
+            }
+
+            $user->update($updateData);
+
+            Cache::forget('users_list_all');
+
+            return $user->fresh();
+        });
+    }
+
+    public function deleteUser(User $user): void
+    {
+        if ($user->id === Auth::id()) {
+            throw ValidationException::withMessages(['user' => 'Vous ne pouvez pas supprimer votre propre compte.']);
+        }
+
+        if ($user->sales()->exists()) {
+            throw ValidationException::withMessages(['user' => 'Impossible de supprimer un utilisateur qui a enregistre des dossiers.']);
+        }
+
+        if (Purchase::where('created_by', $user->id)->exists()) {
+            throw ValidationException::withMessages(['user' => 'Impossible de supprimer un utilisateur qui a enregistre des achats.']);
+        }
+
+        if (FinanceTransaction::where('created_by', $user->id)->exists()) {
+            throw ValidationException::withMessages(['user' => 'Impossible de supprimer un utilisateur qui a enregistre des transactions financieres.']);
+        }
+
+        $user->delete();
+
+        Cache::forget('users_list_all');
+    }
+}

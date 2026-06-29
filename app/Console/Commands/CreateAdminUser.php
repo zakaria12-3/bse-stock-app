@@ -25,16 +25,22 @@ class CreateAdminUser extends Command
             return self::FAILURE;
         }
 
-        $user = User::updateOrCreate(
-            ['email' => (string) $this->option('email')],
-            [
-                'name' => (string) $this->option('name'),
-                'username' => (string) $this->option('username'),
-                'email_verified_at' => now(),
-                'password' => Hash::make($password),
-                'role' => 'admin',
-            ]
-        );
+        $email = (string) $this->option('email');
+        $username = (string) $this->option('username');
+
+        $user = User::query()
+            ->where('email', $email)
+            ->orWhere('username', $username)
+            ->first() ?? new User();
+
+        $user->forceFill([
+            'name' => (string) $this->option('name'),
+            'username' => $username,
+            'email' => $email,
+            'email_verified_at' => now(),
+            'password' => Hash::make($password),
+            'role' => 'admin',
+        ])->save();
 
         $this->info("Admin user ready: {$user->email}");
 
